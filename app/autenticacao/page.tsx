@@ -1,15 +1,27 @@
 "use client";
 import AuthInput from "@/components/auth/AuthInput";
+import { IconeAtencao } from "@/components/icons";
 import { useState } from "react";
 
 export default function Autenticacao() {
+  const [erro, setErro] = useState<string | null>(null);
   const [modo, setModo] = useState<"login" | "cadastro">("login");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
 
+  function exibirErro(mensagem: string, tempoEmSegundos = 5) {
+    setErro(mensagem);
+    setTimeout(() => setErro(null), tempoEmSegundos * 1000);
+  }
+
   function submeter() {
-    if (modo === "login") console.log("login");
-    else console.log("cadastrar");
+    if (modo === "login") {
+      console.log("login");
+      exibirErro("Ocorreu um erro no login");
+    } else {
+      console.log("cadastrar");
+      exibirErro("Ocorreu um erro no cadastro");
+    }
   }
 
   return (
@@ -31,6 +43,20 @@ export default function Autenticacao() {
             ? "Entre com a Sua Conta"
             : "Cadastre-se na Plataforma"}
         </h1>
+
+        {erro && (
+          <div
+            className={`
+            flex items-center
+            bg-red-400 text-white py-3 px-5 my-2
+            border-2 border-red-700 rounded-lg
+        `}
+          >
+            {IconeAtencao()}
+            <span className="ml-3 text-sm">{erro}</span>
+          </div>
+        )}
+
         <AuthInput
           tipo="email"
           label="Email"
@@ -83,7 +109,10 @@ export default function Autenticacao() {
               className={`
                     text-blue-500 hover:text-blue-700 font-semibold cursor-pointer
                 `}
-            > Crie uma conta gratuitamente</a>
+            >
+              {" "}
+              Crie uma conta gratuitamente
+            </a>
           </p>
         ) : (
           <p className="mt-8">
@@ -93,7 +122,10 @@ export default function Autenticacao() {
               className={`
                     text-blue-500 hover:text-blue-700 font-semibold cursor-pointer
                 `}
-            > Entre com as suas credenciais</a>
+            >
+              {" "}
+              Entre com as suas credenciais
+            </a>
           </p>
         )}
       </div>

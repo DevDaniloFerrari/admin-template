@@ -9,6 +9,7 @@ import { Cookies, useCookies } from "next-client-cookies";
 interface AuthContextProps {
   usuario?: Usuario;
   loginGoogle?: () => Promise<void>;
+  logout?: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextProps>({});
@@ -39,7 +40,7 @@ export function AuthProvider(props: any) {
   const [usuario, setUsuario] = useState<Usuario>();
   const [carregando, setCarregando] = useState<boolean>(true);
 
-  async function configurarSessao(usuarioFirebase: User) {
+  async function configurarSessao(usuarioFirebase: User | null) {
     if (usuarioFirebase?.email) {
       const usuario = await usuarioNormalizado(usuarioFirebase);
       setUsuario(usuario);
@@ -55,20 +56,38 @@ export function AuthProvider(props: any) {
   }
 
   async function loginGoogle() {
-    const resposta = await signInWithGooglePopup();
-    configurarSessao(resposta.user);
-    router.push("/");
+    try {
+      const resposta = await signInWithGooglePopup();
+      configurarSessao(resposta.user);
+      router.push("/");
+    } finally {
+      setCarregando(false);
+    }
+  }
+
+  async function logout() {
+    try {
+      setCarregando(true);
+      await auth.signOut();
+      await configurarSessao(null);
+      router.push("/autenticacao");
+    } finally {
+      setCarregando(false);
+    }
   }
 
   useEffect((): (() => void) => {
-    const cancelar = auth.onIdTokenChanged((promise) =>
-      configurarSessao(promise as User)
-    );
-    return () => cancelar;
+    if (cookies.get("auth")) {
+      const cancelar = auth.onIdTokenChanged((promise) =>
+        configurarSessao(promise as User)
+      );
+      return () => cancelar;
+    }
+    return () => {};
   }, []);
 
   return (
-    <AuthContext.Provider value={{ usuario, loginGoogle }}>
+    <AuthContext.Provider value={{ usuario, loginGoogle, logout }}>
       {props.children}
     </AuthContext.Provider>
   );

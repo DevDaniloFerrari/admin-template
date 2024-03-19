@@ -3,6 +3,7 @@ import Usuario from "@/model/Usuario";
 import { User } from "firebase/auth";
 import { createContext, useState } from "react";
 import { useRouter } from "next/navigation";
+import { signInWithGooglePopup } from "@/firebase";
 
 interface AuthContextProps {
   usuario?: Usuario;
@@ -28,8 +29,12 @@ export function AuthProvider(props: any) {
   const [usuario, setUsuario] = useState<Usuario>();
 
   async function loginGoogle() {
-    console.log("Logando com Google");
-    router.push("/");
+    const resposta = await signInWithGooglePopup();
+    if (resposta.user?.email) {
+      const usuario = await usuarioNormalizado(resposta.user);
+      setUsuario(usuario);
+      router.push("/");
+    }
   }
 
   return (

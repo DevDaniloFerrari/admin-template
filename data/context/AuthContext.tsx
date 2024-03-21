@@ -3,12 +3,19 @@ import Usuario from "@/model/Usuario";
 import { User } from "firebase/auth";
 import { createContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { auth, signInWithGooglePopup } from "@/firebase";
+import {
+  auth,
+  createUserWithEmailESenha,
+  signInWithEmailESenha,
+  signInWithGooglePopup,
+} from "@/firebase";
 import { Cookies, useCookies } from "next-client-cookies";
 
 interface AuthContextProps {
   usuario?: Usuario;
   carregando?: boolean;
+  login?: (email: string, senha: string) => Promise<void>;
+  cadastrar?: (email: string, senha: string) => Promise<void>;
   loginGoogle?: () => Promise<void>;
   logout?: () => Promise<void>;
 }
@@ -23,7 +30,7 @@ async function usuarioNormalizado(usuarioFirebase: User): Promise<Usuario> {
     email: usuarioFirebase.email || "",
     token,
     provedor: usuarioFirebase.providerData[0].providerId,
-    imagemUrl: usuarioFirebase.photoURL || "",
+    imagemUrl: usuarioFirebase.photoURL,
   };
 }
 
@@ -56,10 +63,30 @@ export function AuthProvider(props: any) {
     }
   }
 
+  async function cadastrar(email: string, senha: string) {
+    try {
+      const resposta = await createUserWithEmailESenha(email, senha);
+      await configurarSessao(resposta.user);
+      router.push("/");
+    } finally {
+      setCarregando(false);
+    }
+  }
+
+  async function login(email: string, senha: string) {
+    try {
+      const resposta = await signInWithEmailESenha(email, senha);
+      await configurarSessao(resposta.user);
+      router.push("/");
+    } finally {
+      setCarregando(false);
+    }
+  }
+
   async function loginGoogle() {
     try {
       const resposta = await signInWithGooglePopup();
-      configurarSessao(resposta.user);
+      await configurarSessao(resposta.user);
       router.push("/");
     } finally {
       setCarregando(false);
@@ -89,7 +116,9 @@ export function AuthProvider(props: any) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ usuario, carregando, loginGoogle, logout }}>
+    <AuthContext.Provider
+      value={{ usuario, carregando, login, cadastrar, loginGoogle, logout }}
+    >
       {props.children}
     </AuthContext.Provider>
   );

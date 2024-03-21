@@ -4,5 +4,5 @@ export default interface Usuario {
   nome: string;
   token: string;
   provedor: string;
-  imagemUrl: string;
+  imagemUrl: string | null;
 }

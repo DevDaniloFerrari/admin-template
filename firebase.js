@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { getAuth, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -19,3 +19,5 @@ provider.setCustomParameters({
 });
 export const auth = getAuth(firebaseApp);
 export const signInWithGooglePopup = () => signInWithPopup(auth, provider);
+export const signInWithEmailESenha = (email, senha) => signInWithEmailAndPassword(auth, email, senha);
+export const createUserWithEmailESenha = (email, senha) => createUserWithEmailAndPassword(auth, email, senha);

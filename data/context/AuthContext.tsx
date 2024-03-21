@@ -8,6 +8,7 @@ import { Cookies, useCookies } from "next-client-cookies";
 
 interface AuthContextProps {
   usuario?: Usuario;
+  carregando?: boolean;
   loginGoogle?: () => Promise<void>;
   logout?: () => Promise<void>;
 }
@@ -76,18 +77,19 @@ export function AuthProvider(props: any) {
     }
   }
 
-  useEffect((): (() => void) => {
+  useEffect((): any => {
     if (cookies.get("auth")) {
-      const cancelar = auth.onIdTokenChanged((promise) =>
-        configurarSessao(promise as User)
-      );
+      const cancelar = auth.onIdTokenChanged((promise) => {
+        configurarSessao(promise as User);
+      });
       return () => cancelar;
     }
-    return () => {};
+
+    setCarregando(false);
   }, []);
 
   return (
-    <AuthContext.Provider value={{ usuario, loginGoogle, logout }}>
+    <AuthContext.Provider value={{ usuario, carregando, loginGoogle, logout }}>
       {props.children}
     </AuthContext.Provider>
   );

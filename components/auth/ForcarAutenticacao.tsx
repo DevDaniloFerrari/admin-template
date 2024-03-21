@@ -1,15 +1,31 @@
+import Head from "next/head";
 import Image from "next/image";
 import loading from "@/public/images/loading.gif";
 import useAuth from "@/data/hook/useAuth";
 import { useRouter } from "next/navigation";
-import { use, useEffect } from "react";
+import { useEffect } from "react";
 
 export default function ForcarAutenticacao(props: any) {
   const { usuario, carregando } = useAuth();
   const router = useRouter();
 
   function renderizarConteudo() {
-    return <>{props.children}</>;
+    return (
+      <>
+        <Head>
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                    if(!document.cookie.includes("auth")){
+                        window.location.href = "autenticacao"
+                    }
+                `,
+            }}
+          ></script>
+        </Head>
+        {props.children}
+      </>
+    );
   }
 
   function renderizarCarregando() {
